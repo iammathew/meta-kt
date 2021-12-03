@@ -1,0 +1,7 @@
+var language = 1 + 2;
+language = 2 + 3;
+{
+    var language = 3;
+    print language;
+}
+print language;
