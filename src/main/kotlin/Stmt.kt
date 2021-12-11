@@ -6,6 +6,7 @@ abstract class Stmt {
        fun visitIfStmt(stmt: If): R
        fun visitPrintStmt(stmt: Print): R
        fun visitVarStmt(stmt: Var): R
+       fun visitWhileStmt(stmt: While): R
     }
     data class Block(val statements: MutableList<Stmt>) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
@@ -30,6 +31,11 @@ abstract class Stmt {
     data class Var(val name: Token, val initializer: Expr) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visitVarStmt(this)
+        }
+    }
+    data class While(val condition: Expr, val body: Stmt) : Stmt() {
+        override fun <R> accept(visitor: Visitor<R>): R {
+            return visitor.visitWhileStmt(this)
         }
     }
 

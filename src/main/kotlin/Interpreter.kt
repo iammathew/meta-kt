@@ -1,5 +1,25 @@
-class Interpreter(private val errorCallback: (error: RuntimeError) -> Any): Expr.Visitor<Any>, Stmt.Visitor<Unit> {
-    private var environment = Environment()
+class Interpreter(private val errorCallback: (error: RuntimeError) -> Any) : Expr.Visitor<Any>, Stmt.Visitor<Unit> {
+    private val globals = Environment()
+    private var environment = globals
+
+    init {
+        globals.define("clock", object : MetaCallable {
+            override fun arity(): Int {
+                return 0
+            }
+
+            override fun call(
+                interpreter: Interpreter,
+                arguments: List<Any>
+            ): Any {
+                return System.currentTimeMillis().toDouble() / 1000.0
+            }
+
+            override fun toString(): String {
+                return "<native fn>"
+            }
+        })
+    }
 
     fun interpret(statements: List<Stmt>) {
         try {
@@ -33,8 +53,14 @@ class Interpreter(private val errorCallback: (error: RuntimeError) -> Any): Expr
     override fun visitIfStmt(stmt: Stmt.If) {
         if (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.thenBranch)
-        } else if(stmt.elseBranch != null) {
+        } else if (stmt.elseBranch != null) {
             execute(stmt.elseBranch)
+        }
+    }
+
+    override fun visitWhileStmt(stmt: Stmt.While) {
+        while(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body)
         }
     }
 
@@ -50,7 +76,7 @@ class Interpreter(private val errorCallback: (error: RuntimeError) -> Any): Expr
         val left = evaluate(expr.left)
         val right = evaluate(expr.right)
 
-        when (expr.operator.type) {
+        return when (expr.operator.type) {
             TokenType.BANG_EQUAL -> !isEqual(left, right)
             TokenType.EQUAL_EQUAL -> isEqual(left, right)
             TokenType.GREATER -> {
@@ -89,10 +115,13 @@ class Interpreter(private val errorCallback: (error: RuntimeError) -> Any): Expr
                     "Operands must be two numbers or two strings."
                 )
             }
+            else -> {
+                throw RuntimeError(
+                    expr.operator,
+                    "Unknown operator for binary expression!"
+                )
+            }
         }
-
-        // Unreachable
-        return MetaNull()
     }
 
     override fun visitGroupingExpr(expr: Expr.Grouping): Any {
@@ -116,6 +145,32 @@ class Interpreter(private val errorCallback: (error: RuntimeError) -> Any): Expr
         val value = evaluate(expr.value)
         environment.assign(expr.name, value)
         return value
+    }
+
+    override fun visitLogicalExpr(expr: Expr.Logical): Any {
+        val left = evaluate(expr.left)
+
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left)) return left
+        } else if (expr.operator.type == TokenType.AND) {
+            if (!isTruthy(left)) return left
+        }
+
+        return evaluate(expr.right)
+    }
+
+    override fun visitCallExpr(expr: Expr.Call): Any {
+        val callee = evaluate(expr.callee)
+        val args = expr.arguments.map { it -> evaluate(it) }
+        if(callee !is MetaCallable) {
+            throw RuntimeError(expr.paren, "Can only call function and classes.")
+        }
+        if (args.size != callee.arity()) {
+            throw RuntimeError(
+                expr.paren, """Expected ${callee.arity()} arguments but got ${args.size}."""
+            )
+        }
+        return callee.call(this, args)
     }
 
     private fun evaluate(expr: Expr): Any {

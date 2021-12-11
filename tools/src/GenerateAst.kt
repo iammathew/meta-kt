@@ -5,8 +5,10 @@ import kotlin.system.exitProcess
 val expressions = arrayOf(
     "Assign   : Token name, Expr value",
     "Binary   : Expr left, Token operator, Expr right",
+    "Call     : Expr callee, Token paren, MutableList<Expr> arguments",
     "Grouping : Expr expression",
     "Literal  : Any value",
+    "Logical  : Expr left, Token operator, Expr right",
     "Unary    : Token operator, Expr right",
     "Variable : Token name"
 )
@@ -16,7 +18,8 @@ val statements = arrayOf(
     "Expression : Expr expression",
     "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
     "Print      : Expr expression",
-    "Var        : Token name, Expr initializer"
+    "Var        : Token name, Expr initializer",
+    "While      : Expr condition, Stmt body"
 )
 
 fun main(args: Array<String>) {

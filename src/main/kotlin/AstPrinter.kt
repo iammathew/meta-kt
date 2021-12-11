@@ -40,4 +40,12 @@ class AstPrinter : Expr.Visitor<String> {
     override fun visitAssignExpr(expr: Expr.Assign): String {
         return parenthesize("assign ${expr.name.lexeme}", expr.value)
     }
+
+    override fun visitLogicalExpr(expr: Expr.Logical): String {
+        return parenthesize(expr.operator.lexeme, expr.left, expr.right)
+    }
+
+    override fun visitCallExpr(expr: Expr.Call): String {
+        TODO("Not yet implemented")
+    }
 }

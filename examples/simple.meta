@@ -1,7 +1,15 @@
 var language = 1 + 2;
-language = 2 + 3;
 {
-    var language = 3;
-    print language;
+    var language = 0;
+    while(language < 10) {
+        if (language == 10) {
+            print language;
+        } else if (language == 1) {
+            print language + 1;
+        }
+        language = language + 1;
+    }
 }
+var time = clock();
 print language;
+print time;
