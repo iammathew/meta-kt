@@ -1,8 +1,6 @@
-
 import Expr.Assign
 import Expr.Logical
 import Stmt.While
-import java.util.*
 
 
 class Parser(private val tokens: List<Token>, private val errorCallback: (token: Token, message: String?) -> Any) {
@@ -40,12 +38,36 @@ class Parser(private val tokens: List<Token>, private val errorCallback: (token:
     }
 
     private fun statement(): Stmt {
+        if (match(TokenType.FUN)) return function("function");
         if (match(TokenType.PRINT)) return printStatement()
         if (match(TokenType.FOR)) return forStatement()
         if (match(TokenType.IF)) return ifStatement()
         if (match(TokenType.WHILE)) return whileStatement();
         if (match(TokenType.LEFT_BRACE)) return Stmt.Block(block())
         return expressionStatement()
+    }
+
+    private fun function(kind: String): Stmt.Function {
+        val name = consume(
+            TokenType.IDENTIFIER,
+            "Expect $kind name."
+        )
+        consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name.")
+        val parameters: MutableList<Token> = ArrayList()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.")
+                }
+                parameters.add(
+                    consume(TokenType.IDENTIFIER, "Expect parameter name.")
+                )
+            } while (match(TokenType.COMMA))
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+        consume(TokenType.LEFT_BRACE, "Expect '{' before $kind body.")
+        val body: MutableList<Stmt> = block()
+        return Stmt.Function(name, parameters, body)
     }
 
     private fun printStatement(): Stmt {

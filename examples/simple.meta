@@ -1,7 +1,7 @@
 var language = 1 + 2;
 {
     var language = 0;
-    while(language < 10) {
+    while (language < 10) {
         if (language == 10) {
             print language;
         } else if (language == 1) {
@@ -10,6 +10,13 @@ var language = 1 + 2;
         language = language + 1;
     }
 }
+
+fun printTime(time) {
+    var str = "It is " + time;
+    print str;
+}
+
 var time = clock();
 print language;
 print time;
+printTime("12:30am");

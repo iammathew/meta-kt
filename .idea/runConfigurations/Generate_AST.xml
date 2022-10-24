@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Generate AST" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="GenerateAstKt" />
+    <module name="tools" />
+    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$/src/main/kotlin" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

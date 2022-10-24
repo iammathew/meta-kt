@@ -1,5 +1,5 @@
 class Interpreter(private val errorCallback: (error: RuntimeError) -> Any) : Expr.Visitor<Any>, Stmt.Visitor<Unit> {
-    private val globals = Environment()
+    val globals = Environment()
     private var environment = globals
 
     init {
@@ -62,6 +62,11 @@ class Interpreter(private val errorCallback: (error: RuntimeError) -> Any) : Exp
         while(isTruthy(evaluate(stmt.condition))) {
             execute(stmt.body)
         }
+    }
+
+    override fun visitFunctionStmt(stmt: Stmt.Function) {
+        val function = MetaFunction(stmt)
+        environment.define(stmt.name.lexeme, function)
     }
 
     override fun visitLiteralExpr(expr: Expr.Literal): Any {
@@ -173,15 +178,15 @@ class Interpreter(private val errorCallback: (error: RuntimeError) -> Any) : Exp
         return callee.call(this, args)
     }
 
-    private fun evaluate(expr: Expr): Any {
+    fun evaluate(expr: Expr): Any {
         return expr.accept(this)
     }
 
-    private fun execute(stmt: Stmt) {
+    fun execute(stmt: Stmt) {
         stmt.accept(this)
     }
 
-    private fun executeBlock(
+    fun executeBlock(
         statements: List<Stmt>,
         environment: Environment
     ) {
